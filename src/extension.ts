@@ -5,16 +5,15 @@ import * as path from 'path';
 import * as fs from 'fs';
 import crc32 from 'crc32-ts';
 
-const DEFINE_STRING = "define ";
-const ALIAS_STRING = "alias ";
-const LINE_LENGTH = 52;
-const FILE_PREFIX = "compiled_";
-const HASH_STRING = "HASH(";
+const DEFINE_STRING:string = "define ";
+const ALIAS_STRING:string = "alias ";
+const LINE_LENGTH:number = 52;
+const FILE_PREFIX:string = "compiled_";
+const HASH_STRING:string = "HASH(";
+const IGNORE:Array<string> = [" ", "\t"];
+const TERMINATE:Array<string> = ["\n"];
 
 export function activate(context: vscode.ExtensionContext) {
-	console.log('Congratulations, your extension "ic10compiler" is now active!');
-
-
 	const disposable = vscode.commands.registerCommand('ic10compiler.compile', async() => {
         // Get the active text editor
         const editor = vscode.window.activeTextEditor;
@@ -29,16 +28,16 @@ export function activate(context: vscode.ExtensionContext) {
                 
                 // Modify the string to replace defines and aliases
                 let fileString = Buffer.from(content).toString();
+				fileString = removeComments(fileString);
 				fileString = replace(fileString, DEFINE_STRING);
 				fileString = replace(fileString, ALIAS_STRING);
+				fileString = removeBlankLines(fileString);
 
 				// Save to new file
 				let fileName = path.basename(uri.fsPath);
 				fileName = FILE_PREFIX+fileName;
 				let targetDir = path.dirname(uri.fsPath)+"/";
 				let newPath = path.join(targetDir+fileName);
-
-				// vscode.window.showInformationMessage(`targetDir: ${targetDir}\nuriFSPath: ${uri.fsPath}\nnewPath: ${newPath}`);
 
 				try {
 					fs.writeFileSync(newPath, fileString);
@@ -66,7 +65,7 @@ function replace(str:string, directive:string):string {
 		let contentEnd:number = str.indexOf("\n", nameEnd+1);
 		let content:string = str.substring(nameEnd, contentEnd) + " ";
 		content = content.trim();
-		content = removeComment(content);
+		// content = removeComment(content);
 		content = replaceHash(content);
 		
 		str = str.slice(0, pos) + str.slice(contentEnd+1);
@@ -77,10 +76,51 @@ function replace(str:string, directive:string):string {
 	return str;
 }
 
-function removeComment(str:string):string {
+function removeComments(str:string):string {
 	let commentStart = str.indexOf("#");
-	if(commentStart > 0) {
-		return str.substring(0, commentStart);
+	while(commentStart > 0) {
+		let end = str.indexOf("\n", commentStart);
+		if(end < 0) {
+			end = str.length;
+		}
+		str = str.slice(0, commentStart) + str.slice(end);
+
+		commentStart = str.indexOf("#", commentStart);
+	}
+	return str;
+}
+
+// function removeComment(str:string):string {
+// 	let commentStart = str.indexOf("#");
+// 	if(commentStart > 0) {
+// 		return str.substring(0, commentStart);
+// 	}
+// 	return str;
+// }
+
+function removeBlankLines(str:string):string {
+	let start:number = 0;
+	while(start >= 0 && start < str.length) {
+		let pos:number = start+1;
+		let end:number = str.indexOf("\n", start+1);
+		if(end < 0) {
+			end = str.length;
+		}
+		while(pos < str.length) {
+			let c = str[pos];
+			if(TERMINATE.includes(c)) {
+				// let end = pos;
+				str = str.slice(0, start) + str.slice(end + (start===0?2:0));
+				end = start;
+				break;
+			}
+			else if(!IGNORE.includes(c)) {
+				break;
+			}
+			pos++;
+		}
+
+		start = end;
 	}
 	return str;
 }
