@@ -1,9 +1,9 @@
 {
-  "name": "ic10compiler",
+  "name": "ic10-minifier",
   "type": "module",
-  "displayName": "IC10Compiler",
-  "description": "Simplified Stationeers IC10 code to save space.",
-  "repository": "https://github.com/Cethin/ic10compiler",
+  "displayName": "IC10-Minifier",
+  "description": "Minifies Stationeers IC10 code to save space.",
+  "repository": "https://github.com/Cethin/IC10-Minifier",
   "publisher": "LukeSmith",
   "version": "0.2.0",
   "engines": {
@@ -17,8 +17,8 @@
   "contributes": {
     "commands": [
       {
-        "command": "ic10compiler.compile",
-        "title": "Compile IC10"
+        "command": "IC10Minifier.minify'",
+        "title": "Minify IC10"
       }
     ]
   },

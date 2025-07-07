@@ -8,13 +8,13 @@ import crc32 from 'crc32-ts';
 const DEFINE_STRING:string = "define ";
 const ALIAS_STRING:string = "alias ";
 const LINE_LENGTH:number = 52;
-const FILE_PREFIX:string = "compiled_";
+const FILE_PREFIX:string = "minified_";
 const HASH_STRING:string = "HASH(";
 const IGNORE:Array<string> = [" ", "\t"];
 const TERMINATE:Array<string> = ["\n"];
 
 export function activate(context: vscode.ExtensionContext) {
-	const disposable = vscode.commands.registerCommand('ic10compiler.compile', async() => {
+	const disposable = vscode.commands.registerCommand('IC10Minifier.minify', async() => {
         // Get the active text editor
         const editor = vscode.window.activeTextEditor;
 		
@@ -44,7 +44,7 @@ export function activate(context: vscode.ExtensionContext) {
 				} catch(error) {
 					vscode.window.showErrorMessage(`Failed to write file: ${(error as Error).message}`);
 				} finally {
-					vscode.window.showInformationMessage(`File compiled to ${newPath}`);
+					vscode.window.showInformationMessage(`File minifed to ${newPath}`);
 				}
             } catch (error) {
                 vscode.window.showErrorMessage(`Failed to read file: ${(error as Error).message}`);
