@@ -8,4 +8,4 @@ Simplified IC10 code for the game Stationeers to save space. Replaces defines an
 
 Install the ic10Compiler plugin for VSCode and run "Compile IC10" on your file.
 
-This will create a new file in the same directory with the prefixed "compiled_" with the simplified ic10 program.
+This will create a new file in the same directory with the prefixed "compiled_" with the simplified IC10 program.
