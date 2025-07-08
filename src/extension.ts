@@ -10,7 +10,7 @@ const ALIAS_STRING:string = "alias ";
 const LINE_LENGTH:number = 52;
 const FILE_PREFIX:string = "minified_";
 const HASH_STRING:string = "HASH(";
-const IGNORE:Array<string> = [" ", "\t"];
+const IGNORE:Array<string> = [" ", "\t", "."];
 const TERMINATE:Array<string> = ["\n"];
 
 export function activate(context: vscode.ExtensionContext) {
@@ -27,11 +27,13 @@ export function activate(context: vscode.ExtensionContext) {
                 const content = await vscode.workspace.fs.readFile(uri);
                 
                 // Modify the string to replace defines and aliases
-                let fileString = Buffer.from(content).toString();
-				fileString = removeComments(fileString);
-				fileString = replace(fileString, DEFINE_STRING);
-				fileString = replace(fileString, ALIAS_STRING);
-				fileString = removeBlankLines(fileString);
+                let str = Buffer.from(content).toString();
+				str = removeComments(str);
+				str = replace(str, DEFINE_STRING);
+				str = replace(str, ALIAS_STRING);
+				let lines:Array<string> = toLines(str);
+				lines = removeBlankLines(lines);
+				str = replaceLabels(lines);
 
 				// Save to new file
 				let fileName = path.basename(uri.fsPath);
@@ -40,7 +42,7 @@ export function activate(context: vscode.ExtensionContext) {
 				let newPath = path.join(targetDir+fileName);
 
 				try {
-					fs.writeFileSync(newPath, fileString);
+					fs.writeFileSync(newPath, str);
 				} catch(error) {
 					vscode.window.showErrorMessage(`Failed to write file: ${(error as Error).message}`);
 				} finally {
@@ -90,38 +92,66 @@ function removeComments(str:string):string {
 	return str;
 }
 
-// function removeComment(str:string):string {
-// 	let commentStart = str.indexOf("#");
-// 	if(commentStart > 0) {
-// 		return str.substring(0, commentStart);
-// 	}
-// 	return str;
-// }
-
-function removeBlankLines(str:string):string {
+function toLines(str:string):Array<string> {
+	let lines:Array<string> = [];
 	let start:number = 0;
 	while(start >= 0 && start < str.length) {
-		let pos:number = start+1;
-		let end:number = str.indexOf("\n", start+1);
+		let end:number = str.indexOf("\n", start);
 		if(end < 0) {
 			end = str.length;
 		}
-		while(pos < str.length) {
-			let c = str[pos];
-			if(TERMINATE.includes(c)) {
-				// let end = pos;
-				str = str.slice(0, start) + str.slice(end + (start===0?2:0));
-				end = start;
-				break;
-			}
-			else if(!IGNORE.includes(c)) {
-				break;
-			}
-			pos++;
-		}
 
-		start = end;
+		lines.push(str.substring(start, end));
+		start = end+1;
 	}
+	return lines;
+}
+
+function linesToString(lines:Array<string>):string {
+	let str:string = "";
+	for(let i:number = 0; i < lines.length; i++) {
+		str += lines[i] + "\n";
+	}
+	return str;
+}
+
+function removeBlankLines(lines:Array<string>):Array<string> {
+	let i:number = 0;
+	let ret:Array<string> = [];
+	while(i < lines.length) {
+		for(let j:number = 0; j < lines[i].length; j++) {
+			if(TERMINATE.includes(lines[i][j])) {
+				break;
+			}
+			else if(!IGNORE.includes(lines[i][j])) {
+				ret.push(lines[i]);
+				break;
+			}
+		}
+		i++;
+	}
+	return ret;
+}
+
+function replaceLabels(lines:Array<string>):string {
+	let labels:Map<string,number> = new Map();
+	let offset = 0;
+	for(let i:number = 0; i < lines.length; i++) {
+		let end = lines[i].indexOf(":");
+		if(end > 0) {
+			let l:string = lines[i].substring(0, end);
+			labels.set(l, i);
+			lines.splice(i, 1);
+			i--;
+		}
+	}
+
+	let str:string = linesToString(lines);
+	let keys = labels.keys;
+	for(const element of labels) {
+		str = str.replaceAll(element[0], element[1].toString());
+	}
+
 	return str;
 }
 

@@ -17,7 +17,7 @@
   "contributes": {
     "commands": [
       {
-        "command": "IC10Minifier.minify'",
+        "command": "IC10Minifier.minify",
         "title": "Minify IC10"
       }
     ]
