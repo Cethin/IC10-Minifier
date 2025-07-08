@@ -13,3 +13,7 @@ Install the IC10-Minifier extension for VSCode: https://marketplace.visualstudio
 Press "ctrl+P" and run "Minify IC10" on your file.
 
 This will create a new file in the same directory with the prefixed "minified_" with the minified IC10 program.
+
+## Known issues
+
+* Relative branching with a line that's removed (empty line, comment, label, etc.) between it and it's destination will not be correctly changed.
