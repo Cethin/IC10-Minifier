@@ -8,6 +8,8 @@ Minifies IC10 code for the game Stationeers to save space. Replaces defines, ali
 
 ## How to use
 
-Install the IC10-Minifier extension for VSCode and run "Minify IC10" on your file.
+Install the IC10-Minifier extension for VSCode: https://marketplace.visualstudio.com/items?itemName=LukeSmith.ic10-minifier
+
+Press "ctrl+P" and run "Minify IC10" on your file.
 
 This will create a new file in the same directory with the prefixed "minified_" with the minified IC10 program.
