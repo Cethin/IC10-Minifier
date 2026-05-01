@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import crc32 from 'crc32-ts';
+import { debug } from 'console';
 
 const DEFINE_STRING:string = "define ";
 const ALIAS_STRING:string = "alias ";
@@ -12,6 +13,8 @@ const FILE_PREFIX:string = "minified_";
 const HASH_STRING:string = "HASH(";
 const IGNORE:Array<string> = [" ", "\t", "."];
 const TERMINATE:Array<string> = ["\n"];
+const CELSIUS_REGEX:RegExp = /\d*\.?\d+[cC]/m;
+const CELSIUS_TO_KELVIN:number = 273.15;
 
 export function activate(context: vscode.ExtensionContext) {
 	const disposable = vscode.commands.registerCommand('IC10Minifier.minify', async() => {
@@ -31,6 +34,7 @@ export function activate(context: vscode.ExtensionContext) {
 				str = removeComments(str);
 				str = replace(str, DEFINE_STRING);
 				str = replace(str, ALIAS_STRING);
+				str = toKelvin(str);
 				let lines:Array<string> = toLines(str);
 				lines = removeBlankLines(lines);
 				str = replaceLabels(lines);
@@ -79,7 +83,7 @@ function replace(str:string, directive:string):string {
 }
 
 function removeComments(str:string):string {
-	let commentStart = str.indexOf("#");
+	let commentStart:number = str.indexOf("#");
 	while(commentStart > 0) {
 		let end = str.indexOf("\n", commentStart);
 		if(end < 0) {
@@ -88,6 +92,20 @@ function removeComments(str:string):string {
 		str = str.slice(0, commentStart) + str.slice(end);
 
 		commentStart = str.indexOf("#", commentStart);
+	}
+	return str;
+}
+
+function toKelvin(str:string):string {
+	let pos:number = str.search(CELSIUS_REGEX);
+	while(pos >= 0) {
+		let cEnd:number = Math.min(str.indexOf("c", pos), str.indexOf("C", pos));
+		let number:string = str.substring(pos, cEnd);
+		let k:string = (Number(number) + CELSIUS_TO_KELVIN).toString();
+		let firstPart:string = str.slice(0, pos);
+		let secondPart:string = str.slice(cEnd+1);
+		str = firstPart + k + secondPart;
+		pos = str.search(CELSIUS_REGEX);
 	}
 	return str;
 }

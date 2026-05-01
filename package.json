@@ -3,9 +3,10 @@
   "type": "module",
   "displayName": "IC10-Minifier",
   "description": "Minifies Stationeers IC10 code to save space.",
+  "icon": "Icon/MinifierLogo.png",
   "repository": "https://github.com/Cethin/IC10-Minifier",
   "publisher": "LukeSmith",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "engines": {
     "vscode": "^1.101.0"
   },
